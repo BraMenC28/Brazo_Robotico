@@ -234,7 +234,7 @@ def dibujar_robot():
 
 
 def display():
-    glClearColor(0.13, 0.14, 0.17, 1.0)
+    glClearColor(0.25, 0.20, 0.35, 1.0)      # fondo morado grisaceo
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
     glMatrixMode(GL_MODELVIEW)
@@ -245,8 +245,8 @@ def display():
 
     # --- Camara y escena completa ---
 
-    # Alejar la escena (mientras mas zoom, menos se aleja)
-    glTranslatef(0, 0, -3.0 / zoom)
+    # Alejar la escena (6.0 = distancia normal; mientras mas zoom, menos se aleja)
+    glTranslatef(0, 0, -6.0 / zoom)
 
     # Desplazar toda la escena (mm pasados a unidades de OpenGL)
     glTranslatef(posicion[0] * escala, posicion[1] * escala, posicion[2] * escala)
@@ -288,29 +288,33 @@ def reshape(w, h):
 
 ventana = tk.Tk()
 ventana.title("Controles del brazo")
+ventana.geometry("+870+50")      # posicion de la ventana en la pantalla (x, y). Cambiala si no cabe
 
 
-def crear_slider(marco, texto, minimo, maximo, paso):
-    # Crea un slider, lo coloca en el marco y lo devuelve
+def crear_slider(marco, texto, minimo, maximo, paso, fila, columna):
+    # Crea un slider y lo coloca en la cuadricula del marco (fila, columna)
     slider = tk.Scale(marco, label=texto, from_=minimo, to=maximo,
-                      resolution=paso, orient="horizontal", length=250)
-    slider.pack(fill="x")
+                      resolution=paso, orient="horizontal", length=160)
+    slider.grid(row=fila, column=columna, padx=3, pady=2)
     return slider
 
 
-# --- Marco izquierdo: articulaciones ---
+# --- Marco de ARRIBA: articulaciones (2 filas de 4 sliders) ---
 
 marco_art = tk.LabelFrame(ventana, text="Articulaciones (grados)")
-marco_art.pack(side="left", fill="y", padx=4, pady=4)
+marco_art.grid(row=0, column=0, padx=6, pady=4)
 
-slider_j1 = crear_slider(marco_art, nombres[0], limites_min[0], limites_max[0], 1)
-slider_j2 = crear_slider(marco_art, nombres[1], limites_min[1], limites_max[1], 1)
-slider_j3 = crear_slider(marco_art, nombres[2], limites_min[2], limites_max[2], 1)
-slider_j4 = crear_slider(marco_art, nombres[3], limites_min[3], limites_max[3], 1)
-slider_j5 = crear_slider(marco_art, nombres[4], limites_min[4], limites_max[4], 1)
-slider_j6 = crear_slider(marco_art, nombres[5], limites_min[5], limites_max[5], 1)
-slider_j7 = crear_slider(marco_art, nombres[6], limites_min[6], limites_max[6], 1)
-slider_j8 = crear_slider(marco_art, nombres[7], limites_min[7], limites_max[7], 1)
+# Fila 0: J1 a J4
+slider_j1 = crear_slider(marco_art, nombres[0], limites_min[0], limites_max[0], 1, 0, 0)
+slider_j2 = crear_slider(marco_art, nombres[1], limites_min[1], limites_max[1], 1, 0, 1)
+slider_j3 = crear_slider(marco_art, nombres[2], limites_min[2], limites_max[2], 1, 0, 2)
+slider_j4 = crear_slider(marco_art, nombres[3], limites_min[3], limites_max[3], 1, 0, 3)
+
+# Fila 1: J5 a J8
+slider_j5 = crear_slider(marco_art, nombres[4], limites_min[4], limites_max[4], 1, 1, 0)
+slider_j6 = crear_slider(marco_art, nombres[5], limites_min[5], limites_max[5], 1, 1, 1)
+slider_j7 = crear_slider(marco_art, nombres[6], limites_min[6], limites_max[6], 1, 1, 2)
+slider_j8 = crear_slider(marco_art, nombres[7], limites_min[7], limites_max[7], 1, 1, 3)
 
 sliders_art = [slider_j1, slider_j2, slider_j3, slider_j4,
                slider_j5, slider_j6, slider_j7, slider_j8]
@@ -322,25 +326,27 @@ def home_articulaciones():
         slider.set(0)
 
 
+# Fila 2: boton HOME de las articulaciones
 boton_home_art = tk.Button(marco_art, text="HOME articulaciones", command=home_articulaciones)
-boton_home_art.pack(fill="x", pady=4)
+boton_home_art.grid(row=2, column=0, columnspan=4, pady=4)
 
 
-# --- Marco derecho: camara ---
+# --- Marco de ABAJO: camara ---
 
 marco_cam = tk.LabelFrame(ventana, text="Camara")
-marco_cam.pack(side="left", fill="y", padx=4, pady=4)
+marco_cam.grid(row=1, column=0, padx=6, pady=4)
 
-slider_pos_x = crear_slider(marco_cam, "Desplazar X (mm)", -600, 600, 5)
-slider_pos_y = crear_slider(marco_cam, "Desplazar Y (mm)", -600, 600, 5)
-slider_pos_z = crear_slider(marco_cam, "Desplazar Z (mm)", -600, 600, 5)
-
-slider_rot_x = crear_slider(marco_cam, "Rotar X (grados)", -180, 180, 1)
-slider_rot_y = crear_slider(marco_cam, "Rotar Y (grados)", -180, 180, 1)
-slider_rot_z = crear_slider(marco_cam, "Rotar Z (grados)", -180, 180, 1)
-
-slider_zoom = crear_slider(marco_cam, "Zoom", 0.4, 2.5, 0.05)
+# Fila 0: desplazar en X, Y, Z y zoom
+slider_pos_x = crear_slider(marco_cam, "Desplazar X (mm)", -600, 600, 5, 0, 0)
+slider_pos_y = crear_slider(marco_cam, "Desplazar Y (mm)", -600, 600, 5, 0, 1)
+slider_pos_z = crear_slider(marco_cam, "Desplazar Z (mm)", -600, 600, 5, 0, 2)
+slider_zoom = crear_slider(marco_cam, "Zoom", 0.4, 2.5, 0.05, 0, 3)
 slider_zoom.set(1.0)
+
+# Fila 1: rotar en X, Y, Z
+slider_rot_x = crear_slider(marco_cam, "Rotar X (grados)", -180, 180, 1, 1, 0)
+slider_rot_y = crear_slider(marco_cam, "Rotar Y (grados)", -180, 180, 1, 1, 1)
+slider_rot_z = crear_slider(marco_cam, "Rotar Z (grados)", -180, 180, 1, 1, 2)
 
 
 def vista_superior():
@@ -371,17 +377,21 @@ def home_camara():
     slider_zoom.set(1.0)
 
 
-boton_superior = tk.Button(marco_cam, text="Vista superior", command=vista_superior)
-boton_superior.pack(fill="x")
+# Fila 2: botones de la camara, uno al lado del otro (dentro de un marco)
+fila_botones_cam = tk.Frame(marco_cam)
+fila_botones_cam.grid(row=2, column=0, columnspan=4, pady=4)
 
-boton_isometrica = tk.Button(marco_cam, text="Vista isometrica", command=vista_isometrica)
-boton_isometrica.pack(fill="x")
+boton_superior = tk.Button(fila_botones_cam, text="Vista superior", command=vista_superior)
+boton_superior.pack(side="left", padx=4)
 
-boton_lateral = tk.Button(marco_cam, text="Vista lateral", command=vista_lateral)
-boton_lateral.pack(fill="x")
+boton_isometrica = tk.Button(fila_botones_cam, text="Vista isometrica", command=vista_isometrica)
+boton_isometrica.pack(side="left", padx=4)
 
-boton_home_cam = tk.Button(marco_cam, text="HOME CAMARA", command=home_camara)
-boton_home_cam.pack(fill="x", pady=4)
+boton_lateral = tk.Button(fila_botones_cam, text="Vista lateral", command=vista_lateral)
+boton_lateral.pack(side="left", padx=4)
+
+boton_home_cam = tk.Button(fila_botones_cam, text="HOME CAMARA", command=home_camara)
+boton_home_cam.pack(side="left", padx=4)
 
 
 def salir():
